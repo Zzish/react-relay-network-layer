@@ -1,4 +1,5 @@
 /* eslint-disable arrow-body-style, no-unused-vars */
+import io from 'socket.io-client';
 
 import queries from './relay/queries';
 import queriesBatch from './relay/queriesBatch';
@@ -11,6 +12,45 @@ export default class RelayNetworkLayer {
     this._options = options;
     this._middlewares = Array.isArray(middlewares) ? middlewares : [middlewares];
     this._supportedOptions = [];
+
+    // socket configuration
+    this._socket = io(options.ioUrl, options.ioOptions);
+    this._requests = Object.create(null);
+
+    this._socket.on('subscription update', ({ id, data, errors }) => {
+      const request = this._requests[id];
+      if (errors) {
+        request.onError(errors);
+      } else {
+        request.onNext(data);
+      }
+    });
+
+    this._socket.on('subscription closed', (id) => {
+      const request = this._requests[id];
+      if (!request) {
+        return;
+      }
+
+      console.log(`Subscription ${id} is completed`);
+      request.onCompleted();
+      delete this._requests[id];
+    });
+
+    this._socket.on('error', (error) => {
+      Object.values(this._requests).forEach((request) => {
+        request.onError(error);
+      });
+    });
+
+    this._socket.on("disconnect", () => {
+        console.log("Socket disconnectedd");
+        Object.values(this._requests).forEach((request) => {
+          request.onError("disconnect");
+        });
+    });
+
+
 
     this._middlewares.forEach(mw => {
       if (mw && mw.supports) {
@@ -38,6 +78,25 @@ export default class RelayNetworkLayer {
   sendMutation = (request) => {
     return mutation(request, this._fetchWithMiddleware);
   };
+
+  sendSubscription(request) {
+    const id = request.getClientSubscriptionId();
+    this._requests[id] = request;
+
+    this._socket.emit('subscribe', {
+      id,
+      query: request.getQueryString(),
+      variables: request.getVariables(),
+    });
+
+
+    return {
+      dispose: () => {
+        console.log("disposing", id);
+        this._socket.emit('unsubscribe', id);
+      },
+    };
+  }
 
   _fetchWithMiddleware = (req) => {
     return fetchWrapper(req, this._middlewares);
