@@ -39,5 +39,6 @@ node_modules
 .node_repl_history
 
 # Transpiled code
-/es
-/lib
+# Commented out to be able to pull this from the fork
+#/es
+#/lib
