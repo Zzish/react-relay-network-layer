@@ -89,7 +89,9 @@ var RelayNetworkLayer = function () {
 
     return {
       dispose: function dispose() {
-        console.log("disposing", id);
+        setTimeout(function () {
+          delete _this2._requests[id];
+        }, 1000);
         _this2._socket.emit('unsubscribe', id);
       }
     };

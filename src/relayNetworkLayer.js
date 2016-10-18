@@ -92,7 +92,9 @@ export default class RelayNetworkLayer {
 
     return {
       dispose: () => {
-        console.log("disposing", id);
+        setTimeout(() => {
+            delete this._requests[id];
+        }, 1000);
         this._socket.emit('unsubscribe', id);
       },
     };
