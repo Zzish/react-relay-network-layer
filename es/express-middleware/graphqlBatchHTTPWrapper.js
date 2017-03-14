@@ -1,5 +1,5 @@
-import _extends from "babel-runtime/helpers/extends";
-import _Promise from "babel-runtime/core-js/promise";
+import _extends from 'babel-runtime/helpers/extends';
+import _Promise from 'babel-runtime/core-js/promise';
 export default function (graphqlHTTPMiddleware) {
   return function (req, res) {
     var subResponses = [];
@@ -17,7 +17,6 @@ export default function (graphqlHTTPMiddleware) {
           set: function set(headerName, headerValue) {
             this.headers = this.headers || {};
             this.headers[headerName] = headerValue;
-            console.log("headerNameheaderName", headerName, headerValue, this);
             return this;
           },
           send: function send(payload) {
@@ -46,7 +45,6 @@ export default function (graphqlHTTPMiddleware) {
       });
     })).then(function (responses) {
       var response = '';
-      console.log("responseresponseresponse", responses);
       responses.forEach(function (_ref, idx) {
         var status = _ref.status;
         var headers = _ref.headers;
@@ -59,16 +57,15 @@ export default function (graphqlHTTPMiddleware) {
         if (headers) {
           for (var headerName in headers) {
             if (headers.hasOwnProperty(headerName)) {
-              console.log("calling set on res", headerName, headers[headerName]);
               res.set(headerName, headers[headerName]);
             }
           }
         }
         var comma = responses.length - 1 > idx ? ',' : '';
-        response += "{ \"id\":\"" + id + "\", \"payload\":" + payload + " }" + comma;
+        response += '{ "id":"' + id + '", "payload":' + payload + ' }' + comma;
       });
       res.set('Content-Type', 'application/json');
-      res.send("[" + response + "]");
+      res.send('[' + response + ']');
     }).catch(function (err) {
       res.status(500).send({ error: err.message });
     });

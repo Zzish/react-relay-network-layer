@@ -18,7 +18,6 @@ export default function (graphqlHTTPMiddleware) {
               set(headerName, headerValue) {
                 this.headers = this.headers || {};
                 this.headers[headerName] = headerValue;
-                console.log("headerNameheaderName", headerName, headerValue, this);
                 return this;
               },
               send(payload) {
@@ -48,7 +47,6 @@ export default function (graphqlHTTPMiddleware) {
     )
       .then(responses => {
         let response = '';
-        console.log("responseresponseresponse", responses);
         responses.forEach(({ status, headers, id, payload }, idx) => {
           if (status) {
             res.status(status);
@@ -56,7 +54,6 @@ export default function (graphqlHTTPMiddleware) {
           if (headers) {
             for (var headerName in headers) {
                 if (headers.hasOwnProperty(headerName)) {
-                    console.log("calling set on res", headerName, headers[headerName]);
                     res.set(headerName, headers[headerName]);
                 }
             }
